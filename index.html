@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Amber &amp; Oak Coffee House</title>
+  <meta name="description" content="Small-batch coffee, fresh bakes and a warm seat waiting for you.">
+
+  <!-- Flag the page as JS-enabled early so reveal animations never hide content when JS is off -->
+  <script>document.documentElement.classList.add('js');</script>
+
+  <!-- Fonts: Playfair Display (headings) + Inter (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================
+       1. DESIGN TOKENS  (change these to re-theme the whole site)
+       ========================================================== */
+    :root {
+      --espresso: #2a1810;
+      --roast:    #4a2c1d;
+      --mocha:    #7a4a30;
+      --caramel:  #c68b59;
+      --latte:    #e8d5bd;
+      --cream:    #faf3e8;
+      --foam:     #fffaf2;
+      --ink:      #2a1810;
+      --muted:    #7b6556;
+
+      --radius: 22px;
+      --shadow: 0 18px 40px -22px rgba(74, 44, 29, .55);
+      --font-head: "Playfair Display", Georgia, serif;
+      --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      --ease: cubic-bezier(.22, .8, .24, 1);
+    }
+
+    /* ==========================================================
+       2. RESET & BASE  (mobile-first)
+       ========================================================== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+    body {
+      font-family: var(--font-body);
+      color: var(--ink);
+      background: var(--cream);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    img, svg { display: block; max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+    ul { list-style: none; }
+    button, input, select, textarea { font: inherit; color: inherit; }
+
+    .container { width: min(1120px, 100% - 40px); margin-inline: auto; }
+    section { padding: 84px 0; }
+
+    .eyebrow {
+      display: inline-block;
+      font-size: .78rem; font-weight: 600;
+      letter-spacing: .18em; text-transform: uppercase;
+      color: var(--mocha);
+      margin-bottom: 14px;
+    }
+    h1, h2, h3 { font-family: var(--font-head); line-height: 1.15; font-weight: 600; }
+    h2 { font-size: clamp(2rem, 5vw, 2.9rem); color: var(--roast); }
+    .section-head { max-width: 560px; margin-bottom: 46px; }
+    .section-head p { color: var(--muted); margin-top: 12px; }
+    .center { text-align: center; margin-inline: auto; }
+
+    /* ---------- Buttons ---------- */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 14px 28px; border-radius: 999px; border: 1.5px solid transparent;
+      font-weight: 600; font-size: .95rem; cursor: pointer;
+      transition: transform .3s var(--ease), box-shadow .3s var(--ease), background .3s, color .3s, border-color .3s;
+    }
+    .btn-primary { background: var(--roast); color: var(--foam); box-shadow: 0 10px 24px -12px rgba(74,44,29,.9); }
+    .btn-primary:hover { background: var(--mocha); transform: translateY(-3px); box-shadow: 0 16px 28px -12px rgba(74,44,29,.9); }
+    .btn-ghost { border-color: var(--roast); color: var(--roast); background: transparent; }
+    .btn-ghost:hover { background: var(--roast); color: var(--foam); transform: translateY(-3px); }
+    .btn-caramel { background: var(--caramel); color: var(--espresso); }
+    .btn-caramel:hover { background: #d89b69; transform: translateY(-3px); }
+    .btn:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 3px solid var(--caramel); outline-offset: 3px;
+    }
+
+    /* ==========================================================
+       3. NAVIGATION
+       ========================================================== */
+    .site-header {
+      position: fixed; inset: 0 0 auto 0; z-index: 50;
+      background: rgba(250, 243, 232, .82);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(122, 74, 48, .12);
+    }
+    .nav { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+    .brand { font-family: var(--font-head); font-size: 1.35rem; font-weight: 700; color: var(--roast); display: flex; align-items: center; gap: 10px; }
+    .brand-mark { width: 30px; height: 30px; border-radius: 50%; background: var(--roast); display: grid; place-items: center; }
+    .brand-mark svg { width: 16px; height: 16px; }
+
+    .nav-links {
+      position: absolute; top: 68px; left: 0; right: 0;
+      background: var(--cream); border-bottom: 1px solid var(--latte);
+      display: flex; flex-direction: column; gap: 4px; padding: 14px 20px 22px;
+      transform: translateY(-12px); opacity: 0; visibility: hidden;
+      transition: all .35s var(--ease);
+    }
+    .nav-links.open { transform: none; opacity: 1; visibility: visible; }
+    .nav-links a { padding: 11px 6px; font-weight: 500; color: var(--roast); border-radius: 10px; }
+    .nav-links a:hover { color: var(--caramel); }
+    .nav-cta { margin-top: 8px; }
+
+    .menu-toggle { width: 44px; height: 44px; border: 0; background: transparent; cursor: pointer; display: grid; place-items: center; }
+    .menu-toggle span, .menu-toggle span::before, .menu-toggle span::after {
+      content: ""; display: block; width: 22px; height: 2px; background: var(--roast); border-radius: 2px;
+      transition: transform .3s var(--ease), background .3s; position: relative;
+    }
+    .menu-toggle span::before { position: absolute; top: -7px; }
+    .menu-toggle span::after  { position: absolute; top: 7px; }
+    .menu-toggle[aria-expanded="true"] span { background: transparent; }
+    .menu-toggle[aria-expanded="true"] span::before { transform: translateY(7px) rotate(45deg); }
+    .menu-toggle[aria-expanded="true"] span::after  { transform: translateY(-7px) rotate(-45deg); }
+
+    @media (min-width: 860px) {
+      .menu-toggle { display: none; }
+      .nav-links {
+        position: static; flex-direction: row; align-items: center; gap: 6px; padding: 0;
+        background: transparent; border: 0; transform: none; opacity: 1; visibility: visible;
+      }
+      .nav-links a { padding: 8px 14px; }
+      .nav-cta { margin: 0 0 0 10px; padding: 10px 22px !important; color: var(--foam) !important; }
+    }
+
+    /* ==========================================================
+       4. HERO + ANIMATED COFFEE CUP
+       ========================================================== */
+    .hero {
+      position: relative; min-height: 100svh; padding: 110px 0 70px;
+      display: flex; align-items: center; overflow: hidden;
+      background:
+        radial-gradient(60% 50% at 85% 20%, rgba(198,139,89,.28), transparent 70%),
+        radial-gradient(50% 50% at 5% 90%, rgba(232,213,189,.9), transparent 70%),
+        linear-gradient(180deg, var(--foam), var(--cream));
+    }
+    .hero-grid { display: grid; gap: 34px; align-items: center; position: relative; z-index: 2; }
+    .hero-copy h1 { font-size: clamp(2.7rem, 9vw, 5rem); color: var(--espresso); letter-spacing: -.01em; }
+    .hero-copy h1 em { font-style: italic; color: var(--mocha); }
+    .tagline { margin: 20px 0 30px; max-width: 460px; font-size: 1.1rem; color: var(--muted); }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; }
+    .hero-notes { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 38px; font-size: .88rem; color: var(--roast); font-weight: 500; }
+    .hero-notes span::before { content: "✦"; color: var(--caramel); margin-right: 8px; }
+
+    .cup-stage { position: relative; display: grid; place-items: center; order: -1; }
+    .cup-stage::before {            /* soft glow behind the cup */
+      content: ""; position: absolute; width: 78%; aspect-ratio: 1; border-radius: 50%;
+      background: radial-gradient(circle, rgba(198,139,89,.4), transparent 68%);
+      filter: blur(8px);
+    }
+    .cup { width: min(340px, 74vw); cursor: pointer; position: relative; overflow: visible; }
+
+    /* --- The liquid: slides up from below the cup floor to its resting level --- */
+    .liquid { transform: translateY(0); }
+    .js .liquid { transform: translateY(170px); }          /* hidden below the cup until the animation starts */
+    .cup.fill .liquid { animation: fill 5.2s cubic-bezier(.45, .05, .25, 1) .5s forwards; }
+    @keyframes fill { to { transform: translateY(0); } }
+
+    /* --- Gentle waves on the coffee surface --- */
+    .wave-a { animation: wave 4.5s linear infinite; }
+    .wave-b { animation: wave 7s linear infinite reverse; }
+    @keyframes wave { to { transform: translateX(-150px); } }  /* 150 = one wave period in the path */
+
+    /* --- Steam: three wisps rise and fade, staggered --- */
+    .steam path {
+      fill: none; stroke: var(--caramel); stroke-width: 5; stroke-linecap: round;
+      opacity: 0; transform-box: fill-box; transform-origin: center bottom;
+      animation: steam 4.2s ease-in-out infinite;
+    }
+    .steam path:nth-child(1) { animation-delay: 3.2s; }
+    .steam path:nth-child(2) { animation-delay: 4.2s; stroke: var(--mocha); }
+    .steam path:nth-child(3) { animation-delay: 5.2s; }
+    @keyframes steam {
+      0%   { opacity: 0;   transform: translateY(18px) scaleY(.85) skewX(0deg); }
+      30%  { opacity: .65; }
+      100% { opacity: 0;   transform: translateY(-26px) scaleY(1.15) skewX(8deg); }
+    }
+
+    .pour-again {
+      margin-top: 10px; background: none; border: 0; cursor: pointer;
+      font-size: .85rem; font-weight: 600; color: var(--mocha); letter-spacing: .04em;
+      padding: 8px 14px; border-radius: 999px; transition: background .3s;
+    }
+    .pour-again:hover { background: rgba(122, 74, 48, .1); }
+
+    /* Floating coffee beans (pure decoration) */
+    .bean {
+      position: absolute; width: 22px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--mocha), var(--espresso));
+      opacity: .22; animation: floaty 9s ease-in-out infinite;
+    }
+    .bean::after { content: ""; position: absolute; inset: 3px 9px; border-radius: 50%; background: var(--cream); opacity: .55; transform: rotate(8deg); }
+    .bean:nth-of-type(1) { top: 16%; left: 6%;  transform: rotate(25deg); }
+    .bean:nth-of-type(2) { top: 70%; left: 44%; transform: rotate(-30deg); animation-delay: -3s; width: 16px; height: 25px; }
+    .bean:nth-of-type(3) { top: 22%; right: 7%; transform: rotate(60deg);  animation-delay: -5s; }
+    @keyframes floaty { 50% { translate: 0 -18px; } }
+
+    @media (min-width: 860px) {
+      .hero-grid { grid-template-columns: 1.1fr .9fr; gap: 40px; }
+      .cup-stage { order: 0; }
+      .cup { width: min(420px, 38vw); }
+    }
+
+    /* ==========================================================
+       5. ABOUT
+       ========================================================== */
+    .about-grid { display: grid; gap: 44px; align-items: center; }
+    .about-visual {
+      position: relative; border-radius: var(--radius); min-height: 340px; padding: 34px;
+      background: linear-gradient(150deg, var(--roast), var(--espresso));
+      color: var(--latte); display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .about-visual::before, .about-visual::after {
+      content: ""; position: absolute; border-radius: 50%; border: 1.5px solid rgba(232,213,189,.18);
+    }
+    .about-visual::before { width: 300px; height: 300px; top: -110px; right: -90px; }
+    .about-visual::after  { width: 190px; height: 190px; top: -40px;  right: -30px; }
+    .about-visual .big { font-family: var(--font-head); font-size: 4.6rem; line-height: 1; color: var(--caramel); }
+    .about-visual p { margin-top: 8px; max-width: 280px; }
+    .about-copy p { color: var(--muted); margin-top: 16px; }
+    .values { display: grid; gap: 14px; margin-top: 28px; }
+    .values li { display: flex; gap: 14px; align-items: flex-start; }
+    .values .dot { flex: none; width: 38px; height: 38px; border-radius: 12px; background: var(--latte); display: grid; place-items: center; font-size: 1.1rem; }
+    .values strong { display: block; color: var(--roast); }
+    .values span { color: var(--muted); font-size: .92rem; }
+    @media (min-width: 860px) { .about-grid { grid-template-columns: .9fr 1.1fr; gap: 70px; } }
+
+    /* ==========================================================
+       6. MENU
+       ========================================================== */
+    .menu { background: linear-gradient(180deg, var(--cream), #f4e8d6); }
+    .filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 34px; }
+    .filter {
+      padding: 9px 20px; border-radius: 999px; border: 1.5px solid var(--latte);
+      background: var(--foam); cursor: pointer; font-weight: 500; font-size: .9rem; color: var(--roast);
+      transition: all .3s var(--ease);
+    }
+    .filter:hover { border-color: var(--caramel); }
+    .filter.active { background: var(--roast); color: var(--foam); border-color: var(--roast); }
+
+    .menu-grid { display: grid; gap: 18px; grid-template-columns: 1fr; }
+    @media (min-width: 620px)  { .menu-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1020px) { .menu-grid { grid-template-columns: repeat(4, 1fr); } }
+
+    .card {
+      position: relative; background: var(--foam); border: 1px solid var(--latte);
+      border-radius: var(--radius); padding: 26px 22px 24px; overflow: hidden;
+      transition: transform .4s var(--ease), box-shadow .4s var(--ease), border-color .4s;
+    }
+    .card::before {                      /* caramel bar that grows in on hover */
+      content: ""; position: absolute; left: 0; top: 0; height: 4px; width: 100%;
+      background: linear-gradient(90deg, var(--caramel), var(--mocha));
+      transform: scaleX(0); transform-origin: left; transition: transform .45s var(--ease);
+    }
+    .card:hover { transform: translateY(-8px); box-shadow: var(--shadow); border-color: var(--caramel); }
+    .card:hover::before { transform: scaleX(1); }
+    .card .icon {
+      width: 54px; height: 54px; border-radius: 16px; background: var(--latte);
+      display: grid; place-items: center; font-size: 1.6rem; margin-bottom: 18px;
+      transition: transform .4s var(--ease);
+    }
+    .card:hover .icon { transform: rotate(-8deg) scale(1.1); }
+    .card h3 { font-size: 1.2rem; color: var(--roast); }
+    .card p { color: var(--muted); font-size: .9rem; margin: 8px 0 18px; min-height: 3.6em; }
+    .price { font-weight: 600; color: var(--mocha); font-size: 1.05rem; }
+    .card.hide { display: none; }
+    .card.pop { animation: pop .5s var(--ease) both; }
+    @keyframes pop { from { opacity: 0; transform: translateY(14px) scale(.97); } }
+
+    /* ----------------------------------------------------------
+       MENU POUR STAGE: a mini cup that pours every time a
+       category tab is opened. The colour and extras (steam, ice,
+       straw) change with data-mode = all | hot | cold | bakes.
+       ---------------------------------------------------------- */
+    .pour-stage {
+      --liq-top: #7a4a30; --liq-bot: #32190e;           /* liquid colours (overridden per mode) */
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+      width: 100%; margin: 0 0 40px; padding: 30px 20px 34px; text-align: center;
+      background:
+        radial-gradient(60% 70% at 50% 30%, rgba(198,139,89,.22), transparent 70%),
+        var(--foam);
+      border: 1px solid var(--latte); border-radius: 32px; box-shadow: var(--shadow);
+    }
+    @media (min-width: 760px) {
+      .pour-stage { flex-direction: row; gap: 70px; padding: 40px 60px; text-align: left; }
+      .mini-cup { width: 360px !important; }
+      .pour-text .eyebrow { font-size: .85rem !important; }
+      .pour-text strong { font-size: 2.6rem !important; }
+    }
+    .pour-stage[data-mode="hot"]   { --liq-top: #6b3b22; --liq-bot: #241008; }
+    .pour-stage[data-mode="cold"]  { --liq-top: #d6b18c; --liq-bot: #9a6a46; }
+    .pour-stage[data-mode="bakes"] { --liq-top: #e3a64c; --liq-bot: #a8641f; }
+
+    .mini-cup { width: min(300px, 78vw); flex: none; overflow: visible; }
+    .pour-text .eyebrow { margin-bottom: 4px; font-size: .75rem; }
+    .pour-text strong { display: block; font-family: var(--font-head); font-size: 1.6rem; color: var(--roast); line-height: 1.2; }
+
+    .stop-top { stop-color: var(--liq-top); }
+    .stop-bot { stop-color: var(--liq-bot); }
+
+    /* Liquid rises (restarts whenever .pouring is re-added) */
+    .mini-liquid { transform: translateY(0); }
+    .js .mini-liquid { transform: translateY(86px); }
+    .pour-stage.pouring .mini-liquid { animation: miniFill 2.1s cubic-bezier(.4, .1, .3, 1) .3s forwards; }
+    @keyframes miniFill { to { transform: translateY(0); } }
+
+    .mini-wave-a { animation: miniWave 3s linear infinite; }
+    .mini-wave-b { animation: miniWave 5s linear infinite reverse; }
+    @keyframes miniWave { to { transform: translateX(-75px); } }   /* 75 = one wave period */
+
+    /* The falling stream: a line that draws downward, holds, then retracts from the top */
+    .stream { stroke: var(--liq-top); stroke-width: 6; stroke-dasharray: 100 100; stroke-dashoffset: 100; }
+    .pour-stage.pouring .stream { animation: stream 2.5s ease-in-out forwards; }
+    @keyframes stream {
+      0%   { stroke-dashoffset: 100; }
+      14%  { stroke-dashoffset: 0; }
+      80%  { stroke-dashoffset: 0; }
+      100% { stroke-dashoffset: -100; }
+    }
+
+    /* Steam (hot drinks) */
+    .mini-steam path { fill: none; stroke: var(--caramel); stroke-width: 4; stroke-linecap: round; opacity: 0; transform-box: fill-box; transform-origin: center bottom; }
+    .pour-stage.pouring .mini-steam path { animation: steam 3.4s ease-in-out infinite; animation-delay: 1.8s; }
+    .pour-stage.pouring .mini-steam path:nth-child(2) { animation-delay: 2.7s; }
+    .pour-stage[data-mode="cold"] .mini-steam,
+    .pour-stage[data-mode="bakes"] .mini-steam { display: none; }
+
+    /* Ice cubes + straw (cold drinks only) */
+    .ice, .straw { display: none; }
+    .pour-stage[data-mode="cold"] .ice,
+    .pour-stage[data-mode="cold"] .straw { display: inline; }
+    .ice rect { fill: rgba(255, 255, 255, .55); stroke: rgba(255, 255, 255, .85); stroke-width: 1.5; }
+    .cube { animation: bob 2.6s ease-in-out infinite; }
+    .cube:nth-child(2) { animation-delay: -.9s; }
+    .cube:nth-child(3) { animation-delay: -1.7s; }
+    @keyframes bob { 50% { transform: translateY(3px); } }
+
+    /* ==========================================================
+       7. SPECIALS (dark band)
+       ========================================================== */
+    .specials { background: var(--espresso); color: var(--latte); position: relative; overflow: hidden; }
+    .specials::before {
+      content: ""; position: absolute; width: 520px; height: 520px; right: -180px; top: -200px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(198,139,89,.28), transparent 70%);
+    }
+    .specials h2 { color: var(--foam); }
+    .specials .eyebrow { color: var(--caramel); }
+    .specials .section-head p { color: rgba(232, 213, 189, .75); }
+    .special-grid { display: grid; gap: 20px; position: relative; }
+    @media (min-width: 820px) { .special-grid { grid-template-columns: repeat(3, 1fr); } }
+    .special {
+      border: 1px solid rgba(232,213,189,.16); border-radius: var(--radius); padding: 30px 26px;
+      background: linear-gradient(160deg, rgba(255,255,255,.07), rgba(255,255,255,.02));
+      transition: transform .4s var(--ease), border-color .4s, background .4s;
+    }
+    .special:hover { transform: translateY(-8px); border-color: var(--caramel); background: linear-gradient(160deg, rgba(198,139,89,.18), rgba(255,255,255,.03)); }
+    .tag {
+      display: inline-block; font-size: .7rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+      padding: 5px 12px; border-radius: 999px; background: var(--caramel); color: var(--espresso); margin-bottom: 18px;
+    }
+    .special h3 { color: var(--foam); font-size: 1.45rem; }
+    .special p { margin: 10px 0 20px; font-size: .95rem; color: rgba(232,213,189,.78); }
+    .special .price { color: var(--caramel); font-size: 1.2rem; }
+
+    /* ==========================================================
+       8. LOCATION & HOURS
+       ========================================================== */
+    .visit-grid { display: grid; gap: 22px; }
+    @media (min-width: 900px) { .visit-grid { grid-template-columns: 1fr 1fr 1.1fr; } }
+    .panel { background: var(--foam); border: 1px solid var(--latte); border-radius: var(--radius); padding: 30px 26px; }
+    .panel h3 { font-size: 1.35rem; color: var(--roast); margin-bottom: 18px; }
+    .info li { display: flex; gap: 14px; padding: 10px 0; color: var(--muted); }
+    .info li b { color: var(--roast); display: block; font-weight: 600; }
+    .hours td { padding: 9px 0; border-bottom: 1px dashed var(--latte); color: var(--muted); }
+    .hours td:last-child { text-align: right; }
+    .hours tr.today td { color: var(--roast); font-weight: 600; }
+    .hours { width: 100%; border-collapse: collapse; }
+    .status { display: inline-flex; align-items: center; gap: 8px; font-size: .85rem; font-weight: 600; margin-bottom: 14px; color: var(--roast); }
+    .status i { width: 9px; height: 9px; border-radius: 50%; background: #9c8b7c; }
+    .status.open i { background: #4f9a5b; box-shadow: 0 0 0 0 rgba(79,154,91,.6); animation: pulse 2s infinite; }
+    @keyframes pulse { 70% { box-shadow: 0 0 0 9px rgba(79,154,91,0); } 100% { box-shadow: 0 0 0 0 rgba(79,154,91,0); } }
+
+    /* Stylised map placeholder – swap for a real <iframe> Google Maps embed (see HTML comment) */
+    .map {
+      position: relative; min-height: 280px; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--latte);
+      background:
+        linear-gradient(90deg, rgba(122,74,48,.07) 1px, transparent 1px) 0 0 / 38px 38px,
+        linear-gradient(0deg,  rgba(122,74,48,.07) 1px, transparent 1px) 0 0 / 38px 38px,
+        linear-gradient(135deg, #f1e3cd, #e8d5bd);
+      display: grid; place-items: center;
+    }
+    .map::before { content: ""; position: absolute; width: 140%; height: 26px; background: var(--foam); transform: rotate(-18deg); opacity: .9; }
+    .map::after  { content: ""; position: absolute; width: 22px; height: 140%; background: var(--foam); transform: rotate(12deg); left: 30%; opacity: .9; }
+    .pin { position: relative; z-index: 2; display: grid; justify-items: center; gap: 8px; }
+    .pin-dot { width: 46px; height: 46px; border-radius: 50% 50% 50% 0; background: var(--roast); transform: rotate(-45deg); display: grid; place-items: center; animation: bounce 2.4s var(--ease) infinite; }
+    .pin-dot::after { content: ""; width: 16px; height: 16px; border-radius: 50%; background: var(--caramel); }
+    .pin span { background: var(--foam); padding: 6px 14px; border-radius: 999px; font-size: .8rem; font-weight: 600; color: var(--roast); box-shadow: var(--shadow); }
+    @keyframes bounce { 50% { transform: rotate(-45deg) translate(6px, -6px); } }
+
+    /* ==========================================================
+       9. CONTACT / NEWSLETTER
+       ========================================================== */
+    .contact { background: linear-gradient(180deg, #f4e8d6, var(--latte)); }
+    .contact-wrap {
+      display: grid; gap: 34px; background: var(--foam); border-radius: 30px; padding: 34px 26px;
+      border: 1px solid var(--latte); box-shadow: var(--shadow);
+    }
+    @media (min-width: 860px) { .contact-wrap { grid-template-columns: .9fr 1.1fr; padding: 54px; gap: 60px; } }
+    .contact-wrap > div:first-child p { color: var(--muted); margin-top: 14px; }
+    .perks { margin-top: 22px; display: grid; gap: 10px; color: var(--roast); font-weight: 500; font-size: .95rem; }
+    .perks li::before { content: "☕"; margin-right: 10px; }
+
+    form { display: grid; gap: 16px; }
+    .field { display: grid; gap: 6px; }
+    .field label { font-size: .82rem; font-weight: 600; color: var(--roast); }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 13px 16px; background: var(--cream); border: 1.5px solid var(--latte);
+      border-radius: 14px; transition: border-color .3s, box-shadow .3s, background .3s;
+    }
+    .field textarea { min-height: 96px; resize: vertical; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--caramel); background: #fff; box-shadow: 0 0 0 4px rgba(198,139,89,.18); outline: none; }
+    .field.invalid input { border-color: #b4452f; }
+    .error { color: #b4452f; font-size: .78rem; min-height: 1em; }
+    .row { display: grid; gap: 16px; }
+    @media (min-width: 560px) { .row { grid-template-columns: 1fr 1fr; } }
+    .form-msg { display: none; padding: 16px 18px; border-radius: 14px; background: #e6f1e4; color: #2f5a35; font-weight: 500; }
+    .form-msg.show { display: block; animation: pop .5s var(--ease); }
+
+    /* ==========================================================
+       10. FOOTER
+       ========================================================== */
+    footer { background: var(--espresso); color: rgba(232,213,189,.78); padding: 56px 0 28px; }
+    .foot-grid { display: grid; gap: 30px; }
+    @media (min-width: 760px) { .foot-grid { grid-template-columns: 1.4fr 1fr 1fr; } }
+    footer .brand { color: var(--foam); margin-bottom: 14px; }
+    footer .brand-mark { background: var(--caramel); }
+    footer h4 { color: var(--foam); font-family: var(--font-body); font-size: .85rem; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 14px; }
+    footer li { margin-bottom: 8px; }
+    footer a { transition: color .3s; }
+    footer a:hover { color: var(--caramel); }
+    .copy { margin-top: 40px; padding-top: 22px; border-top: 1px solid rgba(232,213,189,.14); font-size: .82rem; text-align: center; }
+
+    /* ==========================================================
+       11. SCROLL-REVEAL  (driven by Intersection Observer)
+       ========================================================== */
+    .js .reveal { opacity: 0; transform: translateY(32px); transition: opacity .9s var(--ease), transform .9s var(--ease); transition-delay: var(--d, 0s); }
+    .js .reveal.visible { opacity: 1; transform: none; }
+
+    /* Respect users who prefer less motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+      .js .liquid, .js .mini-liquid { transform: none; }
+      .js .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =================== NAVIGATION =================== -->
+  <header class="site-header">
+    <div class="container nav">
+      <a href="#top" class="brand" aria-label="Amber and Oak home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#faf3e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8z"/><path d="M17 10h2a2 2 0 0 1 0 4h-2"/></svg>
+        </span>
+        Amber &amp; Oak
+      </a>
+
+      <button class="menu-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav-links"><span></span></button>
+
+      <nav class="nav-links" id="nav-links" aria-label="Main">
+        <a href="#about">Our Story</a>
+        <a href="#menu">Menu</a>
+        <a href="#specials">Specials</a>
+        <a href="#visit">Visit</a>
+        <a href="#contact">Contact</a>
+        <!-- TODO: replace 260000000000 with your WhatsApp number (country code + number, no + or spaces) -->
+        <a href="https://wa.me/260000000000" class="btn btn-primary nav-cta" target="_blank" rel="noopener">Order Now</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- =================== HERO =================== -->
+    <section class="hero" aria-label="Welcome">
+      <span class="bean" aria-hidden="true"></span>
+      <span class="bean" aria-hidden="true"></span>
+      <span class="bean" aria-hidden="true"></span>
+
+      <div class="container hero-grid">
+
+        <div class="hero-copy">
+          <span class="eyebrow reveal">Small-batch coffee house</span>
+          <h1 class="reveal" style="--d:.1s">Your Daily <em>Escape</em>, Brewed with Love</h1>
+          <p class="tagline reveal" style="--d:.2s">Slow-roasted beans, fresh morning bakes and a warm seat waiting just for you.</p>
+          <div class="hero-actions reveal" style="--d:.3s">
+            <a href="#menu" class="btn btn-primary">View Menu</a>
+            <a href="#about" class="btn btn-ghost">Our Story</a>
+          </div>
+          <div class="hero-notes reveal" style="--d:.4s">
+            <span>Roasted in-house</span>
+            <span>Baked every morning</span>
+            <span>Open 7 days</span>
+          </div>
+        </div>
+
+        <!-- ★ THE STAR: SVG coffee cup that fills up with coffee ★ -->
+        <div class="cup-stage reveal" style="--d:.15s">
+          <svg class="cup" id="cup" viewBox="0 0 300 300" role="img" aria-label="A cup of coffee slowly filling up">
+            <defs>
+              <!-- Everything inside the "coffee-clip" shape is visible; the rest is hidden -->
+              <clipPath id="coffee-clip">
+                <path d="M62 92 H218 L204 226 Q202 242 184 242 H96 Q78 242 76 226 Z"/>
+              </clipPath>
+              <linearGradient id="coffee-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#7a4a30"/>
+                <stop offset="1" stop-color="#32190e"/>
+              </linearGradient>
+              <linearGradient id="cup-grad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#f3e5cf"/>
+                <stop offset=".45" stop-color="#fffaf2"/>
+                <stop offset="1" stop-color="#e4d0b4"/>
+              </linearGradient>
+            </defs>
+
+            <!-- Steam wisps (they appear once the cup is filling) -->
+            <g class="steam">
+              <path d="M108 70 C96 56 120 46 108 32 S116 14 108 4"/>
+              <path d="M140 66 C128 52 152 42 140 28 S148 10 140 0"/>
+              <path d="M172 70 C160 56 184 46 172 32 S180 14 172 4"/>
+            </g>
+
+            <!-- Shadow + saucer -->
+            <ellipse cx="140" cy="270" rx="118" ry="9" fill="#2a1810" opacity=".14"/>
+            <ellipse cx="140" cy="258" rx="112" ry="13" fill="#e8d5bd"/>
+            <ellipse cx="140" cy="254" rx="92" ry="9" fill="#f3e5cf"/>
+
+            <!-- Handle -->
+            <path d="M224 104 C274 100 278 188 214 198" fill="none" stroke="#e4d0b4" stroke-width="14" stroke-linecap="round"/>
+            <path d="M224 104 C274 100 278 188 214 198" fill="none" stroke="#fffaf2" stroke-width="6" stroke-linecap="round" opacity=".8"/>
+
+            <!-- Cup body -->
+            <path d="M54 84 H226 L210 230 Q207 252 186 252 H94 Q73 252 70 230 Z" fill="url(#cup-grad)" stroke="#e0cbab" stroke-width="2"/>
+            <!-- Inner wall (a darker shade so the coffee looks recessed) -->
+            <path d="M62 92 H218 L204 226 Q202 242 184 242 H96 Q78 242 76 226 Z" fill="#d9c3a3"/>
+
+            <!-- Coffee: clipped to the inside of the cup -->
+            <g clip-path="url(#coffee-clip)">
+              <g class="liquid">
+                <!-- base colour -->
+                <rect x="40" y="104" width="240" height="170" fill="url(#coffee-grad)"/>
+                <!-- crema wave (back) -->
+                <g class="wave-b"><path d="M40 98 q37.5 -9 75 0 t75 0 t75 0 t75 0 t75 0 t75 0 V150 H40 Z" fill="#c68b59" opacity=".55"/></g>
+                <!-- main surface wave (front) -->
+                <g class="wave-a"><path d="M40 103 q37.5 -9 75 0 t75 0 t75 0 t75 0 t75 0 t75 0 V260 H40 Z" fill="url(#coffee-grad)"/></g>
+              </g>
+            </g>
+
+            <!-- Rim, highlight -->
+            <rect x="48" y="79" width="184" height="9" rx="4.5" fill="#fffaf2" stroke="#e0cbab" stroke-width="1.5"/>
+            <path d="M74 112 L84 214" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".55"/>
+
+            <!-- Little heart on the cup -->
+            <path d="M140 205 c-14 -9 -19 -17 -19 -24 a10 10 0 0 1 19 -4 a10 10 0 0 1 19 4 c0 7 -5 15 -19 24z" fill="#c68b59" opacity=".9"/>
+          </svg>
+          <button class="pour-again" id="pour" type="button">↻ Pour again</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =================== ABOUT =================== -->
+    <section id="about">
+      <div class="container about-grid">
+        <div class="about-visual reveal">
+          <span class="big">2019</span>
+          <p>The year a tiny roasting table became everybody's favourite corner.</p>
+        </div>
+
+        <div class="about-copy">
+          <span class="eyebrow reveal">Our story</span>
+          <h2 class="reveal" style="--d:.1s">Good coffee takes time. We never rush it.</h2>
+          <p class="reveal" style="--d:.15s">Amber &amp; Oak started with a second-hand roaster and a simple idea: coffee should feel like being welcomed home. Today we still roast in small batches, bake before sunrise and learn our regulars' orders by heart.</p>
+          <ul class="values">
+            <li class="reveal" style="--d:.2s"><span class="dot">🌱</span><div><strong>Ethically sourced</strong><span>Single-origin beans from growers we know by name.</span></div></li>
+            <li class="reveal" style="--d:.28s"><span class="dot">🔥</span><div><strong>Roasted in small batches</strong><span>Fresh every week, never sitting on a shelf.</span></div></li>
+            <li class="reveal" style="--d:.36s"><span class="dot">🤍</span><div><strong>Made for community</strong><span>A place to work, catch up or simply breathe.</span></div></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================== MENU =================== -->
+    <section class="menu" id="menu">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow reveal">The menu</span>
+          <h2 class="reveal" style="--d:.1s">Something for every mood</h2>
+          <p class="reveal" style="--d:.15s">From a quick espresso to a slow cinnamon-roll morning. Prices in Zambian kwacha (K).</p>
+        </div>
+
+        <!-- Mini cup that pours every time you open a category (see "MENU POUR STAGE" in the CSS) -->
+        <div class="pour-stage reveal" id="pourStage" data-mode="all">
+          <svg class="mini-cup" viewBox="0 0 180 190" aria-hidden="true">
+            <defs>
+              <clipPath id="miniClip">
+                <path d="M44 70 H136 L127 138 Q126 150 112 150 H68 Q54 150 53 138 Z"/>
+              </clipPath>
+              <!-- Liquid colour comes from CSS variables, so each category can pour a different drink -->
+              <linearGradient id="miniLiquid" gradientUnits="userSpaceOnUse" x1="0" y1="80" x2="0" y2="150">
+                <stop class="stop-top" offset="0"/>
+                <stop class="stop-bot" offset="1"/>
+              </linearGradient>
+              <linearGradient id="miniCupGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#f3e5cf"/>
+                <stop offset=".45" stop-color="#fffaf2"/>
+                <stop offset="1" stop-color="#e4d0b4"/>
+              </linearGradient>
+            </defs>
+
+            <!-- Steam (hot drinks only) -->
+            <g class="mini-steam">
+              <path d="M58 56 C50 46 66 40 58 30 S64 16 58 8"/>
+              <path d="M122 56 C114 46 130 40 122 30 S128 16 122 8"/>
+            </g>
+
+            <!-- Saucer + handle + cup -->
+            <ellipse cx="90" cy="164" rx="72" ry="8" fill="#e8d5bd"/>
+            <path d="M142 76 C172 74 174 124 130 132" fill="none" stroke="#e4d0b4" stroke-width="9" stroke-linecap="round"/>
+            <path d="M38 64 H142 L132 142 Q130 158 114 158 H66 Q50 158 48 142 Z" fill="url(#miniCupGrad)" stroke="#e0cbab" stroke-width="1.5"/>
+            <path d="M44 70 H136 L127 138 Q126 150 112 150 H68 Q54 150 53 138 Z" fill="#d9c3a3"/>
+
+            <!-- Liquid (clipped to the inside of the cup) -->
+            <g clip-path="url(#miniClip)">
+              <g class="mini-liquid">
+                <g class="mini-wave-b"><path d="M30 78 q18.75 -5 37.5 0 t37.5 0 t37.5 0 t37.5 0 t37.5 0 t37.5 0 V120 H30 Z" fill="#c68b59" opacity=".45"/></g>
+                <g class="mini-wave-a"><path d="M30 82 q18.75 -5 37.5 0 t37.5 0 t37.5 0 t37.5 0 t37.5 0 t37.5 0 V190 H30 Z" fill="url(#miniLiquid)"/></g>
+                <!-- Ice cubes (cold drinks only) -->
+                <g class="ice">
+                  <g class="cube"><rect x="60" y="82" width="16" height="16" rx="4" transform="rotate(-12 68 90)"/></g>
+                  <g class="cube"><rect x="86" y="86" width="16" height="16" rx="4" transform="rotate(10 94 94)"/></g>
+                  <g class="cube"><rect x="108" y="80" width="15" height="15" rx="4" transform="rotate(-6 115 87)"/></g>
+                </g>
+              </g>
+            </g>
+
+            <!-- Rim, highlight -->
+            <rect x="35" y="60" width="110" height="8" rx="4" fill="#fffaf2" stroke="#e0cbab" stroke-width="1.2"/>
+            <path d="M53 84 L58 132" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".5"/>
+
+            <!-- Straw (cold drinks only) -->
+            <g class="straw">
+              <path d="M112 34 L102 134" stroke="#c68b59" stroke-width="6" stroke-linecap="round"/>
+              <path d="M112 34 L102 134" stroke="#fffaf2" stroke-width="6" stroke-dasharray="6 9" opacity=".7"/>
+            </g>
+
+            <!-- Pitcher spout + the falling stream (pathLength=100 keeps the dash maths simple) -->
+            <path d="M72 0 H108 L98 14 H82 Z" fill="#4a2c1d"/>
+            <line class="stream" x1="90" y1="14" x2="90" y2="146" pathLength="100"/>
+          </svg>
+
+          <div class="pour-text">
+            <span class="eyebrow">Now pouring</span>
+            <strong id="pourLabel">Pouring our favourites…</strong>
+          </div>
+        </div>
+
+        <div class="filters reveal" role="group" aria-label="Filter menu">
+          <button class="filter active" data-filter="all">All</button>
+          <button class="filter" data-filter="hot">Hot drinks</button>
+          <button class="filter" data-filter="cold">Cold drinks</button>
+          <button class="filter" data-filter="bakes">Bakes</button>
+        </div>
+
+        <div class="menu-grid">
+          <article class="card reveal" data-cat="hot" style="--d:.0s"><div class="icon">☕</div><h3>Espresso</h3><p>Rich, bold double shot with a golden crema.</p><span class="price">K35</span></article>
+          <article class="card reveal" data-cat="hot" style="--d:.07s"><div class="icon">🥛</div><h3>Cappuccino</h3><p>Velvety steamed milk over a deep espresso base.</p><span class="price">K50</span></article>
+          <article class="card reveal" data-cat="hot" style="--d:.14s"><div class="icon">🍯</div><h3>Caramel Latte</h3><p>Smooth latte swirled with house-made caramel.</p><span class="price">K60</span></article>
+          <article class="card reveal" data-cat="hot" style="--d:.21s"><div class="icon">🤍</div><h3>Flat White</h3><p>Silky micro-foam and a double ristretto shot.</p><span class="price">K55</span></article>
+          <article class="card reveal" data-cat="cold" style="--d:.0s"><div class="icon">🧊</div><h3>Iced Mocha</h3><p>Espresso, dark chocolate and cold milk over ice.</p><span class="price">K65</span></article>
+          <article class="card reveal" data-cat="bakes" style="--d:.07s"><div class="icon">🥐</div><h3>Butter Croissant</h3><p>Flaky, golden and baked fresh every morning.</p><span class="price">K40</span></article>
+          <article class="card reveal" data-cat="bakes" style="--d:.14s"><div class="icon">🌀</div><h3>Cinnamon Roll</h3><p>Warm, gooey and finished with cream-cheese icing.</p><span class="price">K45</span></article>
+          <article class="card reveal" data-cat="bakes" style="--d:.21s"><div class="icon">🫐</div><h3>Blueberry Muffin</h3><p>Soft crumb packed with juicy blueberries.</p><span class="price">K38</span></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================== SPECIALS =================== -->
+    <section class="specials" id="specials">
+      <div class="container">
+        <div class="section-head">
+          <span class="eyebrow reveal">Specials</span>
+          <h2 class="reveal" style="--d:.1s">Brewed this week only</h2>
+          <p class="reveal" style="--d:.15s">Limited runs from our baristas. When they're gone, they're gone.</p>
+        </div>
+
+        <div class="special-grid">
+          <article class="special reveal">
+            <span class="tag">Seasonal</span>
+            <h3>Maple Cinnamon Latte</h3>
+            <p>Espresso, steamed milk, real maple syrup and a dusting of Ceylon cinnamon.</p>
+            <span class="price">K70</span>
+          </article>
+          <article class="special reveal" style="--d:.12s">
+            <span class="tag">Chef's pick</span>
+            <h3>Honey Oat Cold Brew</h3>
+            <p>Slow-steeped for 18 hours, finished with wildflower honey and creamy oat milk.</p>
+            <span class="price">K68</span>
+          </article>
+          <article class="special reveal" style="--d:.24s">
+            <span class="tag">New</span>
+            <h3>Cardamom Spiced Mocha</h3>
+            <p>Dark chocolate, warm cardamom and a hint of orange zest. Cosy in a cup.</p>
+            <span class="price">K72</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================== LOCATION & HOURS =================== -->
+    <section id="visit">
+      <div class="container">
+        <div class="section-head center" style="text-align:center">
+          <span class="eyebrow reveal">Come say hello</span>
+          <h2 class="reveal" style="--d:.1s">Find your seat</h2>
+        </div>
+
+        <div class="visit-grid">
+          <div class="panel reveal">
+            <h3>Location</h3>
+            <ul class="info">
+              <li>📍<div><b>Address</b>Plot 12, Main Street, Solwezi</div></li>
+              <li>📞<div><b>Phone</b>+260 000 000 000</div></li>
+              <li>✉️<div><b>Email</b>hello@amberandoak.example</div></li>
+            </ul>
+          </div>
+
+          <div class="panel reveal" style="--d:.1s">
+            <h3>Opening hours</h3>
+            <div class="status" id="status"><i></i><span>Checking…</span></div>
+            <table class="hours">
+              <tr data-day="1"><td>Monday</td><td>07:00 – 19:00</td></tr>
+              <tr data-day="2"><td>Tuesday</td><td>07:00 – 19:00</td></tr>
+              <tr data-day="3"><td>Wednesday</td><td>07:00 – 19:00</td></tr>
+              <tr data-day="4"><td>Thursday</td><td>07:00 – 19:00</td></tr>
+              <tr data-day="5"><td>Friday</td><td>07:00 – 20:00</td></tr>
+              <tr data-day="6"><td>Saturday</td><td>08:00 – 20:00</td></tr>
+              <tr data-day="0"><td>Sunday</td><td>08:00 – 16:00</td></tr>
+            </table>
+          </div>
+
+          <!-- To use a real map: replace this .map div with a Google Maps <iframe> embed code -->
+          <div class="map reveal" style="--d:.2s" role="img" aria-label="Map showing the coffee house location">
+            <div class="pin"><div class="pin-dot"></div><span>Amber &amp; Oak</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================== CONTACT / NEWSLETTER =================== -->
+    <section class="contact" id="contact">
+      <div class="container">
+        <div class="contact-wrap reveal">
+          <div>
+            <span class="eyebrow">Stay in the loop</span>
+            <h2>Join the Amber &amp; Oak circle</h2>
+            <p>New roasts, secret specials and the occasional free pastry. One friendly email a month, no spam.</p>
+            <ul class="perks">
+              <li>First taste of every seasonal drink</li>
+              <li>Birthday coffee on the house</li>
+              <li>Catering &amp; event enquiries welcome</li>
+            </ul>
+          </div>
+
+          <form id="contact-form" novalidate>
+            <div class="row">
+              <div class="field"><label for="name">Name</label><input id="name" name="name" type="text" placeholder="Your name" autocomplete="name"><span class="error"></span></div>
+              <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" placeholder="you@example.com" autocomplete="email"><span class="error"></span></div>
+            </div>
+            <div class="field">
+              <label for="topic">I'd like to…</label>
+              <select id="topic" name="topic">
+                <option>Join the newsletter</option>
+                <option>Ask about catering</option>
+                <option>Just say hello</option>
+              </select>
+            </div>
+            <div class="field"><label for="message">Message (optional)</label><textarea id="message" name="message" placeholder="Tell us a little more…"></textarea></div>
+            <button class="btn btn-primary" type="submit">Send</button>
+            <div class="form-msg" id="form-msg" role="status"></div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =================== FOOTER =================== -->
+  <footer>
+    <div class="container">
+      <div class="foot-grid">
+        <div>
+          <div class="brand">
+            <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#2a1810" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8z"/><path d="M17 10h2a2 2 0 0 1 0 4h-2"/></svg></span>
+            Amber &amp; Oak
+          </div>
+          <p>Small-batch coffee, fresh bakes and a warm welcome, every day.</p>
+        </div>
+        <div>
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="#about">Our story</a></li>
+            <li><a href="#menu">Menu</a></li>
+            <li><a href="#specials">Specials</a></li>
+            <li><a href="#visit">Visit us</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Follow</h4>
+          <ul>
+            <li><a href="#">Instagram</a></li>
+            <li><a href="#">Facebook</a></li>
+            <li><a href="#">WhatsApp</a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="copy">© <span id="year"></span> Amber &amp; Oak Coffee House. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    /* ==========================================================
+       JAVASCRIPT  (vanilla, no libraries)
+       ========================================================== */
+
+    // ---------- Footer year ----------
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // ---------- Mobile navigation ----------
+    const toggle = document.querySelector('.menu-toggle');
+    const links  = document.getElementById('nav-links');
+    toggle.addEventListener('click', () => {
+      const open = links.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', open);
+    });
+    // Close the menu after tapping a link
+    links.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+      links.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }));
+
+    // ---------- Coffee cup: fill on load, replay on click / button ----------
+    const cup  = document.getElementById('cup');
+    const pour = document.getElementById('pour');
+
+    function fillCup() {
+      cup.classList.remove('fill');
+      void cup.getBoundingClientRect();        // force a reflow so the animation restarts
+      cup.classList.add('fill');
+    }
+    window.addEventListener('load', () => setTimeout(fillCup, 250));
+    cup.addEventListener('click', fillCup);
+    pour.addEventListener('click', fillCup);
+
+    // ---------- Scroll reveal (Intersection Observer) ----------
+    const revealObserver = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          obs.unobserve(entry.target);          // animate only once
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // ---------- Menu filter ----------
+    const filterButtons = document.querySelectorAll('.filter');
+    const cards = document.querySelectorAll('.menu-grid .card');
+    // ---------- Pour animation: every category you open pours its own drink ----------
+    const stage    = document.getElementById('pourStage');
+    const pourText = document.getElementById('pourLabel');
+    const labels = {
+      all:   'Pouring our favourites…',
+      hot:   'Pouring something hot…',
+      cold:  'Pouring over ice…',
+      bakes: 'Drizzling something sweet…'
+    };
+
+    function pourMenu(mode) {
+      stage.dataset.mode = mode;                 // CSS swaps the liquid colour, steam, ice and straw
+      pourText.textContent = labels[mode];
+      stage.classList.remove('pouring');
+      void stage.offsetWidth;                    // force a reflow so the pour restarts from the top
+      stage.classList.add('pouring');
+    }
+
+    // First pour happens when the menu scrolls into view
+    new IntersectionObserver((entries, obs) => {
+      if (entries[0].isIntersecting) { pourMenu('all'); obs.disconnect(); }
+    }, { threshold: 0.6 }).observe(stage);
+
+    // ---------- Menu filter ----------
+    filterButtons.forEach(btn => btn.addEventListener('click', () => {
+      filterButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const type = btn.dataset.filter;
+      pourMenu(type);                            // start the pour for this category
+
+      let n = 0;                                 // stagger the cards so they land one after another
+      cards.forEach(card => {
+        const show = type === 'all' || card.dataset.cat === type;
+        card.classList.toggle('hide', !show);
+        if (show) {
+          card.classList.add('visible');         // make sure it isn't stuck hidden by the reveal state
+          card.style.animationDelay = (n++ * 90) + 'ms';
+          card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop');
+        }
+      });
+    }));
+
+    // ---------- Opening hours: highlight today + "open now" badge ----------
+    // [openHour, closeHour] in 24h time, keyed by day (0 = Sunday)
+    const hours = { 0:[8,16], 1:[7,19], 2:[7,19], 3:[7,19], 4:[7,19], 5:[7,20], 6:[8,20] };
+    (function updateStatus() {
+      const now = new Date();
+      const day = now.getDay();
+      const hr  = now.getHours() + now.getMinutes() / 60;
+      const [open, close] = hours[day];
+      const box = document.getElementById('status');
+      const fmt = h => String(h).padStart(2, '0') + ':00';
+
+      document.querySelector(`.hours tr[data-day="${day}"]`).classList.add('today');
+      if (hr >= open && hr < close) {
+        box.classList.add('open');
+        box.lastElementChild.textContent = `Open now · closes ${fmt(close)}`;
+      } else {
+        box.classList.remove('open');
+        box.lastElementChild.textContent = hr < open ? `Closed · opens today at ${fmt(open)}` : 'Closed · see you tomorrow';
+      }
+    })();
+
+    // ---------- Contact / newsletter form ----------
+    const form = document.getElementById('contact-form');
+    const msg  = document.getElementById('form-msg');
+
+    function setError(input, text) {
+      const field = input.closest('.field');
+      field.classList.toggle('invalid', Boolean(text));
+      field.querySelector('.error').textContent = text || '';
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const name  = form.name;
+      const email = form.email;
+      let ok = true;
+
+      setError(name, name.value.trim() ? '' : 'Please tell us your name.');
+      if (!name.value.trim()) ok = false;
+
+      const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim());
+      setError(email, emailOk ? '' : 'Please enter a valid email.');
+      if (!emailOk) ok = false;
+
+      if (!ok) return;
+
+      /* TODO: connect a real backend here. Examples:
+         - Firebase:  addDoc(collection(db, 'subscribers'), { name, email, topic, message })
+         - Formspree: fetch('https://formspree.io/f/YOUR_ID', { method: 'POST', body: new FormData(form) })
+         For now we just show a friendly confirmation. */
+      msg.textContent = `Thank you, ${name.value.trim()}! We'll be in touch soon. ☕`;
+      msg.classList.add('show');
+      form.reset();
+    });
+  </script>
+</body>
+</html>
